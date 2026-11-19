@@ -1,14 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using api.Data;
 using api.Dtos.Stock;
 using api.Interfaces;
 using api.Mappers;
-using api.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace api.Controllers
 {
@@ -35,7 +29,7 @@ namespace api.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var stock = await _context.Stocks.FindAsync(id);
+            var stock = await _stockRepository.GetByIdAsync(id);
             if (stock == null)
             {       
                 return NotFound();
@@ -47,8 +41,7 @@ namespace api.Controllers
     public async Task<IActionResult> Create([FromBody] CreateStockRequestDtos createStockRequest)
     {
         var stock = createStockRequest.ToStockModel();
-        await _context.Stocks.AddAsync(stock);
-        await _context.SaveChangesAsync();
+        await _stockRepository.CreateAsync(stock);
         return CreatedAtAction(nameof(GetById), new { id = stock.Id }, stock.ToStockDto());
     }
 
@@ -56,7 +49,7 @@ namespace api.Controllers
     [Route("{id}")]
     public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateStockRequestDto updateStockRequest)
     {
-        var stock = await _context.Stocks.FindAsync(id);
+        var stock = await _stockRepository.UpdateAsync(id, updateStockRequest);
         if (stock == null)
         {
             return NotFound();
@@ -74,13 +67,12 @@ namespace api.Controllers
     [Route("{id}")]
     public async Task<IActionResult> Delete([FromRoute] int id)
     {
-        var stock = await _context.Stocks.FindAsync(id);
+        var stock = await _stockRepository.GetByIdAsync(id);
         if (stock == null)
         {
             return NotFound();  
         }
-        _context.Stocks.Remove(stock);
-        await _context.SaveChangesAsync();
+        await _stockRepository.DeleteAsync(stock);
         return NoContent();
   }
     }
