@@ -13,6 +13,7 @@ builder.Services.AddDbContext<api.Data.ApplicationnDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 builder.Services.AddScoped<api.Interfaces.IStockRepository, api.Repository.StockRepository>();
+builder.Services.AddScoped<api.Interfaces.ICommentRepository, api.Repository.CommentRepository>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
