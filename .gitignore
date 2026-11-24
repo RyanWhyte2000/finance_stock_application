@@ -1,1 +1,10 @@
 /.vscode
+# .NET build artifacts
+**/bin/
+**/obj/
+
+# IDE files
+.vs/
+.idea/
+*.user
+*.suo
