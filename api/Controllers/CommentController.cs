@@ -12,9 +12,11 @@ namespace api.Controllers
     public class CommentController :ControllerBase
     {
         private readonly api.Interfaces.ICommentRepository _commentRepository;
-        public CommentController(api.Interfaces.ICommentRepository commentRepository)
+        private readonly api.Interfaces.IStockRepository _stockRepository;
+        public CommentController(api.Interfaces.ICommentRepository commentRepository, api.Interfaces.IStockRepository stockRepository)
         {
-            _commentRepository = commentRepository;             
+            _commentRepository = commentRepository;
+            _stockRepository = stockRepository;
         }
 
         [HttpGet]
@@ -25,6 +27,33 @@ namespace api.Controllers
             
             return Ok(commentDtos);
         }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetCommentById([FromRoute] int id)
+        {
+            var comment = await _commentRepository.GetByIdAsync(id);
+            if (comment == null)
+            {
+                return NotFound();
+            }
+            return Ok(comment.ToCommentDto());
+        }
+        [HttpPost("{stockId}")]
+        public async Task<IActionResult> CreateComment([FromRoute] int stockId, [FromBody] Dtos.Comment.CreateCommentRequestDto createCommentRequest)
+        {
+            var stockExists = await _stockRepository.StockExistsAsync(stockId);
+            if (!stockExists)
+            {
+                return BadRequest($"Stock with ID {stockId} not found.");
+            }
+            
+
+            var comment = createCommentRequest.ToCommentDtoFromCreateRequest(stockId);
+            await _commentRepository.CreateAsync(comment);
+            return CreatedAtAction(nameof(GetCommentById), new { id = comment.Id }, comment.ToCommentDto());
+        }
+
+
     }
 
 }
