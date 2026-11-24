@@ -22,15 +22,23 @@ namespace api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllComments()
         {
+            if(!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             var comments = await _commentRepository.GetAllAsync();
             var commentDtos = comments.Select(c => c.ToCommentDto());
             
             return Ok(commentDtos);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetCommentById([FromRoute] int id)
         {
+            if(!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             var comment = await _commentRepository.GetByIdAsync(id);
             if (comment == null)
             {
@@ -38,9 +46,13 @@ namespace api.Controllers
             }
             return Ok(comment.ToCommentDto());
         }
-        [HttpPost("{stockId}")]
+        [HttpPost("{stockId:int}")]
         public async Task<IActionResult> CreateComment([FromRoute] int stockId, [FromBody] Dtos.Comment.CreateCommentRequestDto createCommentRequest)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             var stockExists = await _stockRepository.StockExistsAsync(stockId);
             if (!stockExists)
             {
@@ -53,9 +65,13 @@ namespace api.Controllers
             return CreatedAtAction(nameof(GetCommentById), new { id = comment.Id }, comment.ToCommentDto());
         }
         [HttpPut]
-        [Route("{id}")]
+        [Route("{id:int}")]
         public async Task<IActionResult> UpdateComment([FromRoute] int id, [FromBody] Dtos.Comment.UpdateCommentRequestDto updateCommentRequest)
         {           
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             var existingComment = await _commentRepository.UpdateAsync(id, updateCommentRequest.ToCommentDtoFromUpdateRequest());
             if (existingComment == null)
             {
@@ -66,9 +82,13 @@ namespace api.Controllers
         }
 
         [HttpDelete]
-        [Route("{id}")]
+        [Route("{id:int}")]
         public async Task<IActionResult> DeleteComment([FromRoute] int id)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             var comment = await _commentRepository.GetByIdAsync(id);
             if (comment == null)
             {
