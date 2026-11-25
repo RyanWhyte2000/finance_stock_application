@@ -14,7 +14,7 @@ namespace api.Repository
         {
             _context = context;
         }
-        public Task<List<Stock>> GetAllAsync(QueryObject queryObject)
+        public async Task<List<Stock>> GetAllAsync(QueryObject queryObject)
         {
             var stocks = _context.Stocks.Include(s => s.Comments).AsQueryable();
 
@@ -27,8 +27,20 @@ namespace api.Repository
             {
                 stocks = stocks.Where(s => s.CompanyName.Contains(queryObject.CompanyName));
             }
+            if(!string.IsNullOrWhiteSpace(queryObject.SortBy))
+            {
+                if (queryObject.SortBy.Equals("Symbol", StringComparison.OrdinalIgnoreCase))
+                {
+                    stocks = queryObject.IsDescending ? stocks.OrderByDescending(s => s.Symbol) : stocks.OrderBy(s => s.Symbol);
+                }
+                else if (queryObject.SortBy.Equals("CompanyName", StringComparison.OrdinalIgnoreCase))
+                {
+                    stocks = queryObject.IsDescending ? stocks.OrderByDescending(s => s.CompanyName) : stocks.OrderBy(s => s.CompanyName);
+                }
+            }
+            var skipNumber = (queryObject.PageNumber - 1) * queryObject.PageSize;
 
-            return stocks.ToListAsync();
+            return await stocks.Skip(skipNumber).Take(queryObject.PageSize).ToListAsync();
         }
 
         public async Task<Stock?> GetByIdAsync(int id)
